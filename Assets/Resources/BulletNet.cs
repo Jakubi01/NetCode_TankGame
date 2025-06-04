@@ -40,7 +40,7 @@ public class BulletNet : NetworkBehaviour
         NetworkObject.Despawn();
     }
     
-    [Rpc(SendTo.Server)]
+    [Rpc(SendTo.Everyone)]
     private void SpawnParticleRpc(Vector3 position, Quaternion rotation)
     {
         if (!explosionParticle)

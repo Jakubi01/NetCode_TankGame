@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -19,5 +20,17 @@ public class InGameManager : MonoBehaviour
         }
         
         DontDestroyOnLoad(gameObject);
+    }
+
+    private void Start()
+    {
+        
+    }
+
+    private IEnumerator StartGameCountDown()
+    {
+        yield return new WaitForSeconds(1f);
+        
+        
     }
 }

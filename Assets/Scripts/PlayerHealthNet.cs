@@ -1,6 +1,7 @@
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerHealthNet : NetworkBehaviour
 {
@@ -13,6 +14,18 @@ public class PlayerHealthNet : NetworkBehaviour
     private void Start()
     {
         _mainCamera = Camera.main;
+        // TODO : Leaderboard 만들기
+        //        Score, Id 2개면 될 듯  
+        //        .
+        //        1. 어떻게 점수를 올릴것인가
+        //        2. 어떻게 모든 클라이언트들을 모아올 것인가
+        //           ㄴ 접속할 때 마다 BeginGameManager에서 PlayerPref로 string으로 Id 전송
+        //        3. 어떻게 리스트를 표시할것인가
+        //
+        // PlayerPrefs.SetInt("PlayerHealth", health.Value);
+        // PlayerPrefs.Save();
+        //
+        // Debug.Log(PlayerPrefs.GetInt("PlayerHealth"));
     }
     
     public override void OnNetworkSpawn()
@@ -43,7 +56,10 @@ public class PlayerHealthNet : NetworkBehaviour
     {
         NetworkObject.Despawn();
         BeginSceneGameManager.Instance.UpdateCountId();
-        Debug.Log(BeginSceneGameManager.Instance.CountId);
+
+        // TODO : 인게임 씬에서 health가 0이 되면 Retry Panel.SetActive(true)
+        //        5분 타이머가 끝나면 모두 EndScene으로 이동하고, Kill point 보여주기
+        SceneManager.LoadScene("EndScene");
     }
 
     [Rpc(SendTo.Owner)]
