@@ -21,7 +21,7 @@ public class RotMuzzle : NetworkBehaviour
         }
         
         Vector3 rot = transform.localEulerAngles;
-        float angleOff = -keyType * BeginSceneGameManager.Instance.RotSpeedTank * Time.deltaTime;
+        float angleOff = -keyType * BeginGameManager.Instance.RotSpeedTank * Time.deltaTime;
         double xAngle = rot.x;
         xAngle += angleOff;
 

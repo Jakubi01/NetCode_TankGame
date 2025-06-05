@@ -2,7 +2,7 @@
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 
-public class BeginSceneGameManager : MonoBehaviour
+public class BeginGameManager : MonoBehaviour
 {
     public enum NodeType
     {
@@ -48,10 +48,11 @@ public class BeginSceneGameManager : MonoBehaviour
         private set;
     }
 
-    public static BeginSceneGameManager Instance { get; private set; }
+    public static BeginGameManager Instance { get; private set; }
 
     private void Start()
     {
+        Application.targetFrameRate = 60;
         InitParam();
     }
 

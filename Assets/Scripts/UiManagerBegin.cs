@@ -34,21 +34,21 @@ public class UiManagerBegin : MonoBehaviour
 
     public void StartHost()
     {
-        BeginSceneGameManager.Instance.UserNodeType = BeginSceneGameManager.NodeType.Host;
+        BeginGameManager.Instance.UserNodeType = BeginGameManager.NodeType.Host;
         UpdateConnection();
         SceneManager.LoadScene("TankScene");
     }
 
     public void StartClient()
     {
-        BeginSceneGameManager.Instance.UserNodeType = BeginSceneGameManager.NodeType.Client;
+        BeginGameManager.Instance.UserNodeType = BeginGameManager.NodeType.Client;
         UpdateConnection();
         SceneManager.LoadScene("TankScene");
     }
 
     public void StartServer()
     {
-        BeginSceneGameManager.Instance.UserNodeType = BeginSceneGameManager.NodeType.Server;
+        BeginGameManager.Instance.UserNodeType = BeginGameManager.NodeType.Server;
         UpdateConnection();
         SceneManager.LoadScene("TankScene");
     }
@@ -74,8 +74,8 @@ public class UiManagerBegin : MonoBehaviour
             }
 
             ushort portNum = ushort.Parse(port);
-            BeginSceneGameManager.Instance.SetConnection(ipAddress, portNum);
-            BeginSceneGameManager.Instance.UserId = userId;
+            BeginGameManager.Instance.SetConnection(ipAddress, portNum);
+            BeginGameManager.Instance.UserId = userId;
         }
     }
 

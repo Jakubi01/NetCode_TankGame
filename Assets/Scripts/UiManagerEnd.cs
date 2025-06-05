@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -5,11 +6,16 @@ public class UiManagerEnd : MonoBehaviour
 {
     // TODO : 이 스크립트는 5분이 지나고 게임이 종료되면 LeaderBoard를 표기하
     
-    public GameObject Panel;
+    public GameObject panel;
+
+    private void Awake()
+    {
+        NetworkManager.Singleton.NetworkConfig.AutoSpawnPlayerPrefabClientSide = false;
+    }
 
     private void Start()
     {
-        Panel.SetActive(true);
+        panel.SetActive(true);
     }
 
     public void OnRetryBtnClicked()

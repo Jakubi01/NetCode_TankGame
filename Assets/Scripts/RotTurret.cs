@@ -17,7 +17,7 @@ public class RotTurret : NetworkBehaviour
             keyType = 1;
         }
 
-        float angleOff = keyType * BeginSceneGameManager.Instance.RotSpeedTank * Time.deltaTime;
+        float angleOff = keyType * BeginGameManager.Instance.RotSpeedTank * Time.deltaTime;
         transform.Rotate(0.0f, angleOff, 0.0f);
     }
 }

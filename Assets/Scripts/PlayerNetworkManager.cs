@@ -1,9 +1,9 @@
+using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
 public class PlayerNetworkController : NetworkBehaviour
 {
-    // TODO : spawn point y 값 조정
     public override void OnNetworkSpawn()
     {
         if (IsServer)
@@ -17,9 +17,19 @@ public class PlayerNetworkController : NetworkBehaviour
                 
                 transform.position = spawnPoint.position;
                 transform.rotation = spawnPoint.rotation;
+
+                StartCoroutine(nameof(SubmitReadyServer));
+                InGameManager.Instance.ConnectedUserNum++;
             }
         }
         
         base.OnNetworkSpawn();
+    }
+
+    private IEnumerator SubmitReadyServer()
+    {
+        // wait for PlayerReadyState init
+        yield return new WaitForSeconds(1f);
+        NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<PlayerReadyState>().SubmitReadyServerRpc();
     }
 }

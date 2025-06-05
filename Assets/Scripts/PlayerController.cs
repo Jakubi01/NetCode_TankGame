@@ -35,10 +35,15 @@ public class PlayerController : NetworkBehaviour
 
     private void Movement()
     {
-        float zOff = Input.GetAxis("Vertical") * BeginSceneGameManager.Instance.SpeedTank * Time.deltaTime;
+        if (!InGameManager.Instance.CanMove)
+        {
+            return;
+        }
+        
+        float zOff = Input.GetAxis("Vertical") * BeginGameManager.Instance.SpeedTank * Time.deltaTime;
         transform.Translate(0.0f, 0.0f, zOff);
         
-        float angleOff = Input.GetAxis("Horizontal") * BeginSceneGameManager.Instance.RotSpeedTank * Time.deltaTime;
+        float angleOff = Input.GetAxis("Horizontal") * BeginGameManager.Instance.RotSpeedTank * Time.deltaTime;
         transform.Rotate(0.0f, angleOff, 0.0f);
     }
 

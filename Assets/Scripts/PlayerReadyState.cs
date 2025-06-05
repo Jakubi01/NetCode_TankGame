@@ -5,14 +5,10 @@ using UnityEngine;
 
 public class PlayerReadyState : NetworkBehaviour
 {
-    private static Dictionary<ulong, bool> _readyStates = new();
-    
-    public static PlayerReadyState Instance { get; private set; }
+    public static Dictionary<ulong, bool> ReadyStates = new();
 
     private void Awake()
     {
-        Instance = this;
-        
         DontDestroyOnLoad(gameObject);
     }
     
@@ -20,46 +16,37 @@ public class PlayerReadyState : NetworkBehaviour
     public void SubmitReadyServerRpc(ServerRpcParams rpcParams = default)
     {
         ulong clientId = rpcParams.Receive.SenderClientId;
-        _readyStates[clientId] = true;
-
+        ReadyStates[clientId] = true;
+  
         if (AllPlayersReady())
         {
-            Debug.Log("모든 플레이어가 Ready. 게임 시작");
-            // InGameManager.Instance.StartGameCountDownRpc();
+            InGameManager.Instance.StartGame();
         }
     }
     
     private bool AllPlayersReady()
     {
-        if (_readyStates.Count < NetworkManager.Singleton.ConnectedClients.Count)
+        if (ReadyStates.Count < NetworkManager.Singleton.ConnectedClients.Count)
         {
             return false;
         }
 
-        // if (InGameManager.Instance.ConnectedUserNum <= 1)
-        // {
-        //     return false;
-        // }
-        
-        // UiManagerTank.Instance.holdOnBox.SetActive(false);
-        
+        if (InGameManager.Instance.ConnectedUserNum <= 1)
+        {
+            return false;
+        }
+ 
         // Lambda
-        return _readyStates.Values.All(isReady => isReady);
+        return ReadyStates.Values.All(isReady => isReady);
     }
     
     public override void OnNetworkSpawn()
     {
-        if (IsServer)
-        {
-            _readyStates[OwnerClientId] = false;
-        }
+        ReadyStates[OwnerClientId] = true;
     }
 
     public override void OnNetworkDespawn()
     {
-        if (IsServer)
-        {
-            _readyStates.Remove(OwnerClientId);
-        }
+        ReadyStates.Remove(OwnerClientId);
     }
 }

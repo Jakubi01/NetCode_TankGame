@@ -4,6 +4,7 @@ using UnityEngine;
 public class BulletNet : NetworkBehaviour
 {
     private Rigidbody _rb;
+    private const int Score = 100;
     
     [HideInInspector]
     public GameObject launchPoint;
@@ -31,7 +32,7 @@ public class BulletNet : NetworkBehaviour
             _rb = GetComponent<Rigidbody>();
         }
 
-        _rb.AddForce(launchPoint.transform.forward * BeginSceneGameManager.Instance.BulletSpeed);
+        _rb.AddForce(launchPoint.transform.forward * BeginGameManager.Instance.BulletSpeed);
     }
 
     [Rpc(SendTo.Server)]
@@ -70,6 +71,7 @@ public class BulletNet : NetworkBehaviour
         if (other.gameObject.CompareTag("Player"))
         {
             other.gameObject.GetComponent<PlayerHealthNet>().DecHealthRpc();
+            NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<PlayerScoreManager>().AddScoreServerRpc(Score);
         }
 
         SpawnParticleRpc(transform.position, transform.rotation);

@@ -1,14 +1,20 @@
 using UnityEngine;
 using TMPro;
+using Unity.Netcode;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class UiManagerTank : MonoBehaviour
 {
     public TMP_Text textUserInfo;
+    public TMP_Text textTimer;
     public Slider sliderHealth;
 
     public int health;
     public int maxHealth = 100;
+    private float _playTime;
+    
+    private bool ShouldStartCountDown { get; set; }
 
     public static UiManagerTank Instance { get; private set; }
 
@@ -17,6 +23,7 @@ public class UiManagerTank : MonoBehaviour
         if (!Instance)
         {
             Instance = this;
+            DontDestroyOnLoad(gameObject);
         }
         else if (Instance != this)
         {
@@ -24,16 +31,50 @@ public class UiManagerTank : MonoBehaviour
         }
     }
     
-    void Start()
+    private void Start()
     {
-        BeginSceneGameManager.Instance.StartNode();
-        BeginSceneGameManager.Instance.UpdateCountId();
+        BeginGameManager.Instance.StartNode();
+        BeginGameManager.Instance.UpdateCountId();
         health = maxHealth;
         UpdateTextUserInfo();
         UpdateSliderHealth();
         Invoke(nameof(CheckCountId), 2.0f);
+        _playTime = InGameManager.Instance.PlayTime;
+        textTimer.text = InGameManager.Instance.PlayTime.ToString("F1");
     }
 
+    private void Update()
+    {
+        if (ShouldStartCountDown)
+        {
+            UpdateCountDownTimer();
+        }
+    }
+
+    public void StartTimerClient()
+    {
+        ShouldStartCountDown = true;
+    }
+
+    private void UpdateCountDownTimer()
+    {
+        if (!textTimer)
+        {
+            return;
+        }
+            
+        _playTime -= Time.deltaTime;
+        textTimer.text = _playTime.ToString("F1");
+
+        if (!(_playTime <= 0))
+        {
+            return;
+        }
+        
+        ShouldStartCountDown = false;
+        StartFadeIn();
+    }
+    
     public void UpdateUIInfo(int value)
     {
         health = value;
@@ -44,7 +85,7 @@ public class UiManagerTank : MonoBehaviour
     
     private void UpdateTextUserInfo()
     {
-        textUserInfo.text = $"{BeginSceneGameManager.Instance.CountId}:{BeginSceneGameManager.Instance.UserId}={health}";
+        textUserInfo.text = $"{BeginGameManager.Instance.CountId}:{BeginGameManager.Instance.UserId}={health}";
     }
 
     private void UpdateSliderHealth()
@@ -54,7 +95,14 @@ public class UiManagerTank : MonoBehaviour
 
     private void CheckCountId()
     {
-        BeginSceneGameManager.Instance.UpdateCountId();
+        BeginGameManager.Instance.UpdateCountId();
         UpdateTextUserInfo();
+    }
+
+    private void StartFadeIn()
+    {
+        // TODO : 페이드 인 효과 적용 
+        
+        NetworkManager.Singleton.SceneManager.LoadScene("EndScene", LoadSceneMode.Single);
     }
 }

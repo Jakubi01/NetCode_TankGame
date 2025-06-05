@@ -1,13 +1,17 @@
-using System.Collections;
 using UnityEngine;
-using System.Collections.Generic;
+using Unity.Netcode;
 
-public class InGameManager : MonoBehaviour
+public class InGameManager : NetworkBehaviour 
 {
     public Transform[] spawnPoints;
     
     public static InGameManager Instance { get; private set; }
+    public int ConnectedUserNum { get; set; }
 
+    public float PlayTime { get; private set; }
+    
+    public bool CanMove { get; set; }
+    
     private void Awake()
     {
         if (!Instance)
@@ -24,13 +28,19 @@ public class InGameManager : MonoBehaviour
 
     private void Start()
     {
-        
+        PlayTime = 30;
+        CanMove = false;
     }
 
-    private IEnumerator StartGameCountDown()
+    [ClientRpc]
+    public void StartGameCountDownClientRpc()
     {
-        yield return new WaitForSeconds(1f);
-        
-        
+        CanMove = true;
+        UiManagerTank.Instance.StartTimerClient();
+    }
+
+    public void StartGame()
+    {
+        StartGameCountDownClientRpc();
     }
 }
