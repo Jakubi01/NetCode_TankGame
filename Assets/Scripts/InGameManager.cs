@@ -13,9 +13,11 @@ public class InGameManager : NetworkBehaviour
 
     public float PlayTime { get; private set; }
     
-    public bool CanMove { get; set; }
+    public bool CanMove { get; private set; }
 
     public Dictionary<ulong, (FixedString64Bytes userName, int score)> FinalScore = new();
+
+    public Dictionary<ulong, (string userName, int score)> ScoreCache = new();
     
     private void Awake()
     {
@@ -52,10 +54,10 @@ public class InGameManager : NetworkBehaviour
     public void CollectScores()
     {
         FinalScore.Clear();
-        var allPlayers = FindObjectsByType<PlayerScoreManager>(FindObjectsSortMode.InstanceID);
-        foreach (var player in allPlayers)
+
+        foreach (var kvp in ScoreCache)
         {
-            FinalScore[player.OwnerClientId] = (player.userId.Value, player.score.Value); 
+            FinalScore[kvp.Key] = kvp.Value;
         }
     }
 }

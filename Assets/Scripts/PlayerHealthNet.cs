@@ -6,7 +6,7 @@ public class PlayerHealthNet : NetworkBehaviour
 {
     private const int MaxHealth = 100;
     public NetworkVariable<int> health = new(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-    public NetworkVariable<FixedString128Bytes> userId = new("player", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<FixedString64Bytes> userId = new(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     private Camera _mainCamera;
     private const int TakenDamage = 50;
     
@@ -31,6 +31,10 @@ public class PlayerHealthNet : NetworkBehaviour
         int curValue = health.Value - TakenDamage;
         if (curValue <= 0)
         {
+            InGameManager.Instance.ScoreCache[OwnerClientId] =
+                (gameObject.GetComponent<PlayerScoreManager>().userId.Value.Value
+                    , gameObject.GetComponent<PlayerScoreManager>().score.Value);
+            
             DestroyEventRpc();
         }
         

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -20,6 +21,9 @@ public class PlayerNetworkManager : NetworkBehaviour
 
                 StartCoroutine(nameof(SubmitReadyServer));
                 InGameManager.Instance.ConnectedUserNum++;
+                InGameManager.Instance.ScoreCache[OwnerClientId] = 
+                    (gameObject.GetComponent<PlayerScoreManager>().userId.Value.Value
+                        , gameObject.GetComponent<PlayerScoreManager>().score.Value);
             }
         }
         

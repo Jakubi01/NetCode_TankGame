@@ -13,12 +13,13 @@ public class RankingManager : MonoBehaviour
 
     void UpdateScoreBoard()
     {
-        // TODO : FinalScore를 읽어오는데 Host의 정보만 읽어오고 있음 수정
+        // TODO :   모든 접속 유저들의 정보를 수집하는데 성공
+        //          그렇지만, Host에서는 userName과 score를 불러오는데 실패하고,
+        //          Client에선 UI Update가 이루어지지 않음
         
         Debug.Log("UpdateScoreBoard");
         
         var rankings = InGameManager.Instance.FinalScore;
-        Debug.Log(rankings.Count);
         
         GameObject entry = Instantiate(scoreEntryPrefab, scoreListParent);
         TMP_Text text = entry.GetComponent<TMP_Text>();

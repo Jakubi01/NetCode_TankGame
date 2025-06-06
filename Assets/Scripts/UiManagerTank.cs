@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using TMPro;
 using Unity.Netcode;
@@ -15,6 +16,8 @@ public class UiManagerTank : MonoBehaviour
     private float _playTime;
     
     private bool ShouldStartCountDown { get; set; }
+    
+    private const float WaitForCollectUserInfoSeconds = 1f;
 
     public static UiManagerTank Instance { get; private set; }
 
@@ -70,11 +73,21 @@ public class UiManagerTank : MonoBehaviour
         {
             return;
         }
-        
+
+        StartCoroutine(nameof(WaitForCollectUserInfo));
         ShouldStartCountDown = false;
         StartFadeIn();
     }
-    
+
+    private IEnumerator WaitForCollectUserInfo()
+    {
+        Debug.Log("Collect Scores");
+        InGameManager.Instance.CollectScores();
+
+        yield return new WaitForSeconds(WaitForCollectUserInfoSeconds);
+    }
+
+
     public void UpdateUIInfo(int value)
     {
         health = value;
@@ -112,9 +125,6 @@ public class UiManagerTank : MonoBehaviour
 
     private void LoadEndScene()
     {
-        Debug.Log("Collect Scores");
-        
-        InGameManager.Instance.CollectScores();
         NetworkManager.Singleton.SceneManager.LoadScene("EndScene", LoadSceneMode.Single);
     }
 }
