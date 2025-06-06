@@ -7,15 +7,14 @@ public class PlayerScoreManager : NetworkBehaviour
         = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     
     public NetworkVariable<FixedString64Bytes> userId 
-        = new("Player", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-
+        = new("Player", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     
     public override void OnNetworkSpawn()
     {
         if (IsServer)
         { 
             score.Value = 0;
-            userId.Value = new FixedString64Bytes("");
+            userId.Value = BeginGameManager.Instance.UserId;
         }
     }
     

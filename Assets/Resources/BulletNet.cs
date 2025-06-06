@@ -5,6 +5,8 @@ public class BulletNet : NetworkBehaviour
 {
     private Rigidbody _rb;
     private const int Score = 100;
+
+    public ulong ClientId { get; set; }
     
     [HideInInspector]
     public GameObject launchPoint;
@@ -63,15 +65,10 @@ public class BulletNet : NetworkBehaviour
     
     private void OnCollisionEnter(Collision other)
     {
-        if (!IsServer)
-        {
-            return;
-        }
-
         if (other.gameObject.CompareTag("Player"))
         {
             other.gameObject.GetComponent<PlayerHealthNet>().DecHealthRpc();
-            NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<PlayerScoreManager>().AddScoreServerRpc(Score);
+            NetworkManager.Singleton.ConnectedClients[ClientId].PlayerObject.GetComponent<PlayerScoreManager>().AddScoreServerRpc(Score);
         }
 
         SpawnParticleRpc(transform.position, transform.rotation);

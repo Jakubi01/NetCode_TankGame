@@ -102,7 +102,19 @@ public class UiManagerTank : MonoBehaviour
     private void StartFadeIn()
     {
         // TODO : 페이드 인 효과 적용 
+
+        // FadeIn Effect가 끝나면 호출
+        if (true)
+        {   
+            LoadEndScene();
+        }
+    }
+
+    private void LoadEndScene()
+    {
+        Debug.Log("Collect Scores");
         
+        InGameManager.Instance.CollectScores();
         NetworkManager.Singleton.SceneManager.LoadScene("EndScene", LoadSceneMode.Single);
     }
 }

@@ -57,7 +57,6 @@
     <Compile Include="Assets\JMO Assets\WarFX\Scripts\WFX_LightFlicker.cs" />
     <Compile Include="Assets\JMO Assets\WarFX\Demo\Assets\WFX_Demo_Wall.cs" />
     <Compile Include="Assets\Scripts\BeginGameManager.cs" />
-    <Compile Include="Assets\Scripts\RankingUI.cs" />
     <Compile Include="Assets\Scripts\UiManagerEnd.cs" />
     <Compile Include="Assets\JMO Assets\WarFX\Scripts\CFX_AutoDestructShuriken.cs" />
     <Compile Include="Assets\Resources\BulletNet.cs" />

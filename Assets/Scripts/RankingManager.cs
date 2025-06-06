@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
 using TMPro;
 using UnityEngine;
 
@@ -15,16 +13,20 @@ public class RankingManager : MonoBehaviour
 
     void UpdateScoreBoard()
     {
-        List<PlayerScoreManager> allPlayers = FindObjectsByType<PlayerScoreManager>(FindObjectsSortMode.InstanceID).ToList();
-
-        var sorted = allPlayers.OrderByDescending(p => p.score.Value).ToList();
-
-        // TODO : 텍스트가 하나만 생성되고 모든 플레이어 점수가 통합되어 보임
-        foreach (var player in sorted)
+        // TODO : FinalScore를 읽어오는데 Host의 정보만 읽어오고 있음 수정
+        
+        Debug.Log("UpdateScoreBoard");
+        
+        var rankings = InGameManager.Instance.FinalScore;
+        Debug.Log(rankings.Count);
+        
+        GameObject entry = Instantiate(scoreEntryPrefab, scoreListParent);
+        TMP_Text text = entry.GetComponent<TMP_Text>();
+        
+        foreach (var player in rankings)
         {
-            GameObject entry = Instantiate(scoreEntryPrefab, scoreListParent);
-            TMP_Text text = entry.GetComponent<TMP_Text>();
-            text.text = $"{player.userId.Value} : {player.score.Value}";
+            Debug.Log(player.Value.userName);
+            text.text += $"{player.Value.userName} : {player.Value.score}" + "\n";
         }
     }
 }

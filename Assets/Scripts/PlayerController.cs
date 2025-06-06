@@ -52,6 +52,7 @@ public class PlayerController : NetworkBehaviour
     {
         GameObject prefab = Instantiate(_bulletPrefabFile);
         prefab.GetComponent<BulletNet>().launchPoint = spawnPoint;
+        prefab.GetComponent<BulletNet>().ClientId = OwnerClientId;
         
         prefab.transform.position = spawnPoint.transform.position;
         prefab.transform.rotation = spawnPoint.transform.rotation;

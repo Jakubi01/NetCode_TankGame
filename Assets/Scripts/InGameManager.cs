@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using Unity.Collections;
 using UnityEngine;
 using Unity.Netcode;
 
@@ -6,11 +8,14 @@ public class InGameManager : NetworkBehaviour
     public Transform[] spawnPoints;
     
     public static InGameManager Instance { get; private set; }
+    
     public int ConnectedUserNum { get; set; }
 
     public float PlayTime { get; private set; }
     
     public bool CanMove { get; set; }
+
+    public Dictionary<ulong, (FixedString64Bytes userName, int score)> FinalScore = new();
     
     private void Awake()
     {
@@ -42,5 +47,15 @@ public class InGameManager : NetworkBehaviour
     public void StartGame()
     {
         StartGameCountDownClientRpc();
+    }
+
+    public void CollectScores()
+    {
+        FinalScore.Clear();
+        var allPlayers = FindObjectsByType<PlayerScoreManager>(FindObjectsSortMode.InstanceID);
+        foreach (var player in allPlayers)
+        {
+            FinalScore[player.OwnerClientId] = (player.userId.Value, player.score.Value); 
+        }
     }
 }

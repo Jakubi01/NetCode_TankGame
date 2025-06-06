@@ -2,7 +2,7 @@ using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
-public class PlayerNetworkController : NetworkBehaviour
+public class PlayerNetworkManager : NetworkBehaviour
 {
     public override void OnNetworkSpawn()
     {
@@ -30,6 +30,6 @@ public class PlayerNetworkController : NetworkBehaviour
     {
         // wait for PlayerReadyState init
         yield return new WaitForSeconds(1f);
-        NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<PlayerReadyState>().SubmitReadyServerRpc();
+        NetworkManager.Singleton.ConnectedClients[OwnerClientId].PlayerObject.GetComponent<PlayerReadyState>().SubmitReadyServerRpc();
     }
 }
