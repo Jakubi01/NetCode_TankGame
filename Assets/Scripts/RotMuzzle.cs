@@ -9,6 +9,11 @@ public class RotMuzzle : NetworkBehaviour
     
     void Update()
     {
+        if (!gameObject || !BeginGameManager.Instance)
+        {
+            return;
+        }
+        
         int keyType = 0;
         
         if (Input.GetKey(KeyCode.I))

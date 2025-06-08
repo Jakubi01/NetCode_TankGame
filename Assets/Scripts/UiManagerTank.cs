@@ -1,23 +1,38 @@
-using System.Collections;
 using UnityEngine;
 using TMPro;
+using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+public struct ScoreData : INetworkSerializable
+{
+    public FixedString64Bytes UserName;
+    public int Score;
+
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    {
+        serializer.SerializeValue(ref UserName);
+        serializer.SerializeValue(ref Score);
+    }
+}
+
 public class UiManagerTank : MonoBehaviour
 {
     public TMP_Text textUserInfo;
+    public TMP_Text textScore;
     public TMP_Text textTimer;
+    public TMP_Text textScoreboardTimer;
     public Slider sliderHealth;
+    public GameObject rankingPanel;
 
     public int health;
     public int maxHealth = 100;
     private float _playTime;
+    private float _showScoreboardTime;
     
     private bool ShouldStartCountDown { get; set; }
-    
-    private const float WaitForCollectUserInfoSeconds = 1f;
+    private bool ShouldStartScoreboardTimer { get; set; }
 
     public static UiManagerTank Instance { get; private set; }
 
@@ -32,18 +47,32 @@ public class UiManagerTank : MonoBehaviour
         {
             Destroy(gameObject);
         }
+        
+        DontDestroyOnLoad(gameObject);
     }
     
     private void Start()
     {
         BeginGameManager.Instance.StartNode();
         BeginGameManager.Instance.UpdateCountId();
+        
         health = maxHealth;
+        
         UpdateTextUserInfo();
         UpdateSliderHealth();
         Invoke(nameof(CheckCountId), 2.0f);
+
+        ShouldStartCountDown = false;
+        ShouldStartScoreboardTimer = false;
+        
         _playTime = InGameManager.Instance.PlayTime;
+        _showScoreboardTime = 10;
+        
         textTimer.text = InGameManager.Instance.PlayTime.ToString("F1");
+        textScoreboardTimer.text = InGameManager.Instance.PlayTime.ToString("F1");
+        textScore.text = string.Empty;
+        
+        rankingPanel.SetActive(false);
     }
 
     private void Update()
@@ -52,11 +81,21 @@ public class UiManagerTank : MonoBehaviour
         {
             UpdateCountDownTimer();
         }
+
+        if (ShouldStartScoreboardTimer)
+        {
+            UpdateScoreBoardTimer();
+        }
     }
 
-    public void StartTimerClient()
+    public void StartTimer()
     {
         ShouldStartCountDown = true;
+    }
+
+    public void StartScoreboardTimer()
+    {
+        ShouldStartScoreboardTimer = true;
     }
 
     private void UpdateCountDownTimer()
@@ -73,21 +112,33 @@ public class UiManagerTank : MonoBehaviour
         {
             return;
         }
-
-        StartCoroutine(nameof(WaitForCollectUserInfo));
+        
         ShouldStartCountDown = false;
+        InGameManager.Instance.StartScoreboardTimer();
+        
+        rankingPanel.SetActive(true);
+        InGameManager.Instance.CollectScoresServerRpc();
+    }
+
+    private void UpdateScoreBoardTimer()
+    {
+        if (!textScoreboardTimer)
+        {
+            return;
+        }
+
+        _showScoreboardTime -= Time.deltaTime;
+        textScoreboardTimer.text = _showScoreboardTime.ToString("F1");
+
+        if (!(_showScoreboardTime <= 0f))
+        {
+            return;
+        }
+
+        ShouldStartScoreboardTimer = false;
         StartFadeIn();
     }
-
-    private IEnumerator WaitForCollectUserInfo()
-    {
-        Debug.Log("Collect Scores");
-        InGameManager.Instance.CollectScores();
-
-        yield return new WaitForSeconds(WaitForCollectUserInfoSeconds);
-    }
-
-
+    
     public void UpdateUIInfo(int value)
     {
         health = value;
@@ -101,6 +152,15 @@ public class UiManagerTank : MonoBehaviour
         textUserInfo.text = $"{BeginGameManager.Instance.CountId}:{BeginGameManager.Instance.UserId}={health}";
     }
 
+    public void UpdateScoreUI(ScoreData[] scoreData)
+    {
+        textScore.text = "";
+        foreach (var data in scoreData)
+        {
+            textScore.text += $"{data.UserName} : {data.Score}\n";
+        }
+    }
+    
     private void UpdateSliderHealth()
     {
         sliderHealth.value = health;
@@ -114,8 +174,6 @@ public class UiManagerTank : MonoBehaviour
 
     private void StartFadeIn()
     {
-        // TODO : 페이드 인 효과 적용 
-
         // FadeIn Effect가 끝나면 호출
         if (true)
         {   

@@ -6,6 +6,11 @@ public class RotTurret : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (!gameObject || !BeginGameManager.Instance)
+        {
+            return;
+        }
+        
         int keyType = 0;
         
         if (Input.GetKey(KeyCode.J))

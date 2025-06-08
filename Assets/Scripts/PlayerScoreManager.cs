@@ -11,16 +11,24 @@ public class PlayerScoreManager : NetworkBehaviour
     
     public override void OnNetworkSpawn()
     {
-        if (IsServer)
+        if (IsOwner)
         { 
             score.Value = 0;
-            userId.Value = BeginGameManager.Instance.UserId;
+            SetUserIdServerRpc(BeginGameManager.Instance.UserId);
         }
+        
+        base.OnNetworkSpawn();
     }
     
     [ServerRpc(RequireOwnership = false)]
     public void AddScoreServerRpc(int amount)
     { 
         score.Value += amount;
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void SetUserIdServerRpc(string userName)
+    {
+        userId.Value = userName;
     }
 }

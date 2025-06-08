@@ -19,6 +19,11 @@ public class PlayerController : NetworkBehaviour
     
     void Update()
     {
+        if (!gameObject || !BeginGameManager.Instance)
+        {
+            return;
+        }
+        
         if (!IsOwner)
         {
             return;

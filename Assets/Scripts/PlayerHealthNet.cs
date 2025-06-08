@@ -1,3 +1,4 @@
+using System.Collections;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -5,10 +6,12 @@ using UnityEngine;
 public class PlayerHealthNet : NetworkBehaviour
 {
     private const int MaxHealth = 100;
-    public NetworkVariable<int> health = new(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-    public NetworkVariable<FixedString64Bytes> userId = new(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-    private Camera _mainCamera;
     private const int TakenDamage = 50;
+    
+    public NetworkVariable<int> health = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<FixedString64Bytes> userId = new(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    
+    private Camera _mainCamera;
     
     private void Start()
     {
@@ -31,29 +34,49 @@ public class PlayerHealthNet : NetworkBehaviour
         int curValue = health.Value - TakenDamage;
         if (curValue <= 0)
         {
-            InGameManager.Instance.ScoreCache[OwnerClientId] =
-                (gameObject.GetComponent<PlayerScoreManager>().userId.Value.Value
-                    , gameObject.GetComponent<PlayerScoreManager>().score.Value);
-            
+            var scoreManager = GetComponent<PlayerScoreManager>();
+            SubmitScoreServerRpc(OwnerClientId, scoreManager.userId.Value.Value, scoreManager.score.Value);
+
+            // TODO : 리스폰이 안됨..
+            StartCoroutine(nameof(RespawnCoroutine));
             DestroyEventRpc();
+            return;
         }
         
         UiManagerTank.Instance.UpdateUIInfo(curValue);
         health.Value = curValue;
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    private void SubmitScoreServerRpc(ulong clientId, string userName, int score)
+    {
+        InGameManager.Instance.SubmitScoreServerRpc(clientId, userName, score);
     }
 
     [Rpc(SendTo.Server)]
     private void DestroyEventRpc()
     {
         NetworkObject.Despawn();
-
-        // TODO : 인게임 씬에서 health가 0이 되면 Retry Panel.SetActive(true)
     }
 
     [Rpc(SendTo.Owner)]
     public void DecHealthRpc()
     {
         DecHealth();
+    }
+    
+    private IEnumerator RespawnCoroutine()
+    {
+        yield return new WaitForSeconds(3f); // 3초 후 리스폰
+
+        if (IsServer)
+        {
+            Vector3 spawnPos = GetComponent<PlayerNetworkManager>().GetRandomSpawnPoint();
+            transform.position = spawnPos;
+            health.Value = MaxHealth;
+
+            gameObject.GetComponent<NetworkObject>().Spawn(true);
+        }
     }
     
     private void OnGUI()
@@ -71,7 +94,7 @@ public class PlayerHealthNet : NetworkBehaviour
             y = Screen.height - pos.y
         };
         
-        string text = $"{userId.Value}: {health.Value}";
+        string text = $"{userId.Value} : {health.Value}";
         GUI.Label(rect, text);
     }
 }

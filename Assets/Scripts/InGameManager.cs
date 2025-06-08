@@ -40,10 +40,16 @@ public class InGameManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void StartGameCountDownClientRpc()
+    private void StartGameCountDownClientRpc()
     {
         CanMove = true;
-        UiManagerTank.Instance.StartTimerClient();
+        UiManagerTank.Instance.StartTimer();
+    }
+
+    [ClientRpc]
+    private void StartScoreboardCountDownClientRpc()
+    {
+        UiManagerTank.Instance.StartScoreboardTimer();
     }
 
     public void StartGame()
@@ -51,13 +57,70 @@ public class InGameManager : NetworkBehaviour
         StartGameCountDownClientRpc();
     }
 
-    public void CollectScores()
+    public void StartScoreboardTimer()
     {
+        StartScoreboardCountDownClientRpc();
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    public void CollectScoresServerRpc()
+    {
+        if (!IsServer)
+        {
+            return;
+        }
+            
         FinalScore.Clear();
+        
+        var player = NetworkManager.Singleton.ConnectedClients.Values;
+        foreach (var nc in player)
+        {
+            if (!nc.PlayerObject)
+            {
+                continue;
+            }
 
+            if (!ScoreCache.ContainsKey(nc.ClientId))
+            {
+                ScoreCache.Add(
+                    nc.ClientId
+                    , (nc.PlayerObject.GetComponent<PlayerScoreManager>().userId.Value.Value
+                        , nc.PlayerObject.GetComponent<PlayerScoreManager>().score.Value)
+                );
+            }
+        }
+        
         foreach (var kvp in ScoreCache)
         {
             FinalScore[kvp.Key] = kvp.Value;
         }
+        
+        var scoreList = new List<ScoreData>();
+        foreach (var entry in FinalScore.Values)
+        {
+            scoreList.Add(new ScoreData
+            {
+                UserName = entry.userName,
+                Score = entry.score
+            });
+        }
+        
+        // TODO : List 정렬
+        UpdateScoreBoardClientRpc(scoreList.ToArray());
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    public void SubmitScoreServerRpc(ulong clientId, string userName, int score)
+    {
+        if (!ScoreCache.ContainsKey(clientId))
+        {
+            ScoreCache.Add(clientId, (userName, score));
+        }
+    }
+    
+    [ClientRpc]
+    private void UpdateScoreBoardClientRpc(ScoreData[] scoreData)
+    {
+        UiManagerTank.Instance.UpdateScoreUI(scoreData);
     }
 }

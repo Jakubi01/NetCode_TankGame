@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -21,15 +20,25 @@ public class PlayerNetworkManager : NetworkBehaviour
 
                 StartCoroutine(nameof(SubmitReadyServer));
                 InGameManager.Instance.ConnectedUserNum++;
-                InGameManager.Instance.ScoreCache[OwnerClientId] = 
-                    (gameObject.GetComponent<PlayerScoreManager>().userId.Value.Value
-                        , gameObject.GetComponent<PlayerScoreManager>().score.Value);
             }
         }
         
         base.OnNetworkSpawn();
     }
 
+    public Vector3 GetRandomSpawnPoint()
+    {
+        var spawnPoints = InGameManager.Instance.spawnPoints;
+
+        if (spawnPoints == null || spawnPoints.Length == 0)
+        {
+            return Vector3.zero;
+        }
+
+        int index = Random.Range(0, spawnPoints.Length);
+        return spawnPoints[index].position;
+    }
+    
     private IEnumerator SubmitReadyServer()
     {
         // wait for PlayerReadyState init
