@@ -1,4 +1,3 @@
-using System.Collections;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -34,11 +33,7 @@ public class PlayerHealthNet : NetworkBehaviour
         int curValue = health.Value - TakenDamage;
         if (curValue <= 0)
         {
-            var scoreManager = GetComponent<PlayerScoreManager>();
-            SubmitScoreServerRpc(OwnerClientId, scoreManager.userId.Value.Value, scoreManager.score.Value);
-
-            // TODO : 리스폰이 안됨..
-            StartCoroutine(nameof(RespawnCoroutine));
+            RequestRespawnServerRpc(OwnerClientId);
             DestroyEventRpc();
             return;
         }
@@ -46,11 +41,11 @@ public class PlayerHealthNet : NetworkBehaviour
         UiManagerTank.Instance.UpdateUIInfo(curValue);
         health.Value = curValue;
     }
-    
+
     [ServerRpc(RequireOwnership = false)]
-    private void SubmitScoreServerRpc(ulong clientId, string userName, int score)
+    private void RequestRespawnServerRpc(ulong clientId)
     {
-        InGameManager.Instance.SubmitScoreServerRpc(clientId, userName, score);
+        InGameManager.Instance.HandleRespawn(clientId);
     }
 
     [Rpc(SendTo.Server)]
@@ -63,20 +58,6 @@ public class PlayerHealthNet : NetworkBehaviour
     public void DecHealthRpc()
     {
         DecHealth();
-    }
-    
-    private IEnumerator RespawnCoroutine()
-    {
-        yield return new WaitForSeconds(3f); // 3초 후 리스폰
-
-        if (IsServer)
-        {
-            Vector3 spawnPos = GetComponent<PlayerNetworkManager>().GetRandomSpawnPoint();
-            transform.position = spawnPos;
-            health.Value = MaxHealth;
-
-            gameObject.GetComponent<NetworkObject>().Spawn(true);
-        }
     }
     
     private void OnGUI()

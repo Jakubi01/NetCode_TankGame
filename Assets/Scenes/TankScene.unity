@@ -1177,7 +1177,7 @@ GameObject:
   - component: {fileID: 887559338}
   - component: {fileID: 887559336}
   m_Layer: 0
-  m_Name: GameManager
+  m_Name: InGameManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1201,6 +1201,7 @@ MonoBehaviour:
   - {fileID: 1214858062}
   - {fileID: 1510448990}
   - {fileID: 1819942325}
+  playerPrefab: {fileID: 6954883412887146921, guid: 7140d6bd1a3d53b4cb6f0f05526d7489, type: 3}
 --- !u!4 &887559337
 Transform:
   m_ObjectHideFlags: 0
@@ -2166,7 +2167,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 192.82, y: 122.63}
+  m_AnchoredPosition: {x: 0, y: 122.63}
   m_SizeDelta: {x: 214.37, y: 54.7459}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1882808238

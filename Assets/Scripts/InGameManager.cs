@@ -1,11 +1,13 @@
+using System.Collections;
 using System.Collections.Generic;
-using Unity.Collections;
 using UnityEngine;
 using Unity.Netcode;
 
 public class InGameManager : NetworkBehaviour 
 {
     public Transform[] spawnPoints;
+
+    public GameObject playerPrefab;
     
     public static InGameManager Instance { get; private set; }
     
@@ -14,10 +16,8 @@ public class InGameManager : NetworkBehaviour
     public float PlayTime { get; private set; }
     
     public bool CanMove { get; private set; }
-
-    public Dictionary<ulong, (FixedString64Bytes userName, int score)> FinalScore = new();
-
-    public Dictionary<ulong, (string userName, int score)> ScoreCache = new();
+    
+    private Dictionary<ulong, (string userId, int Score)> _playerCache = new();
     
     private void Awake()
     {
@@ -37,6 +37,11 @@ public class InGameManager : NetworkBehaviour
     {
         PlayTime = 30;
         CanMove = false;
+        
+        if (_playerCache.Count > 0)
+        {
+            _playerCache.Clear();
+        }
     }
 
     [ClientRpc]
@@ -69,52 +74,30 @@ public class InGameManager : NetworkBehaviour
         {
             return;
         }
-            
-        FinalScore.Clear();
-        
-        var player = NetworkManager.Singleton.ConnectedClients.Values;
-        foreach (var nc in player)
-        {
-            if (!nc.PlayerObject)
-            {
-                continue;
-            }
-
-            if (!ScoreCache.ContainsKey(nc.ClientId))
-            {
-                ScoreCache.Add(
-                    nc.ClientId
-                    , (nc.PlayerObject.GetComponent<PlayerScoreManager>().userId.Value.Value
-                        , nc.PlayerObject.GetComponent<PlayerScoreManager>().score.Value)
-                );
-            }
-        }
-        
-        foreach (var kvp in ScoreCache)
-        {
-            FinalScore[kvp.Key] = kvp.Value;
-        }
         
         var scoreList = new List<ScoreData>();
-        foreach (var entry in FinalScore.Values)
+        foreach (var entry in _playerCache.Values)
         {
             scoreList.Add(new ScoreData
             {
-                UserName = entry.userName,
-                Score = entry.score
+                UserName = entry.userId,
+                Score = entry.Score
             });
         }
         
-        // TODO : List 정렬
+        scoreList.Sort((a, b) => b.Score.CompareTo(a.Score));
         UpdateScoreBoardClientRpc(scoreList.ToArray());
     }
-    
-    [ServerRpc(RequireOwnership = false)]
-    public void SubmitScoreServerRpc(ulong clientId, string userName, int score)
+
+    public void CachePlayerScore(ulong clientId, string userName, int score)
     {
-        if (!ScoreCache.ContainsKey(clientId))
+        if (_playerCache.TryGetValue(clientId, out var oldData))
         {
-            ScoreCache.Add(clientId, (userName, score));
+            _playerCache[clientId] = (userName, oldData.Score += score);
+        }
+        else
+        {
+            _playerCache[clientId] = (userName, score);
         }
     }
     
@@ -122,5 +105,20 @@ public class InGameManager : NetworkBehaviour
     private void UpdateScoreBoardClientRpc(ScoreData[] scoreData)
     {
         UiManagerTank.Instance.UpdateScoreUI(scoreData);
+    }
+
+    public void HandleRespawn(ulong clientId)
+    {
+        StartCoroutine(RespawnCoroutine(clientId));
+    }
+
+    private IEnumerator RespawnCoroutine(ulong clientId)
+    {
+        yield return new WaitForSeconds(3f);
+
+        var spawnPos = spawnPoints[Random.Range(0, spawnPoints.Length)].position;
+        var player = Instantiate(playerPrefab, spawnPos, Quaternion.identity);
+        
+        player.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId, true);
     }
 }

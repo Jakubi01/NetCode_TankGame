@@ -1,19 +1,17 @@
 using Unity.Collections;
 using Unity.Netcode;
+using UnityEngine;
 
 public class PlayerScoreManager : NetworkBehaviour
 {
-    public NetworkVariable<int> score 
-        = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<int> score = new();
     
-    public NetworkVariable<FixedString64Bytes> userId 
-        = new(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<FixedString64Bytes> userId = new();
     
     public override void OnNetworkSpawn()
     {
         if (IsOwner)
         { 
-            score.Value = 0;
             SetUserIdServerRpc(BeginGameManager.Instance.UserId);
         }
         
@@ -21,13 +19,13 @@ public class PlayerScoreManager : NetworkBehaviour
     }
     
     [ServerRpc(RequireOwnership = false)]
-    public void AddScoreServerRpc(int amount)
+    public void AddScoreServerRpc(ulong ownerClientId, int amount)
     { 
-        score.Value += amount;
-    }
+        InGameManager.Instance.CachePlayerScore(ownerClientId, userId.Value.Value, amount);
+    } 
 
     [ServerRpc(RequireOwnership = false)]
-    public void SetUserIdServerRpc(string userName)
+    private void SetUserIdServerRpc(string userName)
     {
         userId.Value = userName;
     }

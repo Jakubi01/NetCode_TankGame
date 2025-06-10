@@ -68,7 +68,8 @@ public class BulletNet : NetworkBehaviour
         if (other.gameObject.CompareTag("Player"))
         {
             other.gameObject.GetComponent<PlayerHealthNet>().DecHealthRpc();
-            NetworkManager.Singleton.ConnectedClients[ClientId].PlayerObject.GetComponent<PlayerScoreManager>().AddScoreServerRpc(Score);
+            NetworkManager.Singleton.ConnectedClients[ClientId].PlayerObject.GetComponent<PlayerScoreManager>()
+                .AddScoreServerRpc(ClientId, Score);
         }
 
         SpawnParticleRpc(transform.position, transform.rotation);

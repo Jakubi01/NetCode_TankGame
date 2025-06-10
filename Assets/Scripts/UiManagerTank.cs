@@ -41,21 +41,23 @@ public class UiManagerTank : MonoBehaviour
         if (!Instance)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
         }
         else if (Instance != this)
         {
             Destroy(gameObject);
         }
-        
-        DontDestroyOnLoad(gameObject);
     }
     
     private void Start()
     {
         BeginGameManager.Instance.StartNode();
         BeginGameManager.Instance.UpdateCountId();
-        
+
+        InitUI();
+    }
+
+    private void InitUI()
+    {
         health = maxHealth;
         
         UpdateTextUserInfo();
@@ -64,8 +66,8 @@ public class UiManagerTank : MonoBehaviour
 
         ShouldStartCountDown = false;
         ShouldStartScoreboardTimer = false;
-        
-        _playTime = InGameManager.Instance.PlayTime;
+
+        _playTime = 5f;// InGameManager.Instance.PlayTime;
         _showScoreboardTime = 10;
         
         textTimer.text = InGameManager.Instance.PlayTime.ToString("F1");
