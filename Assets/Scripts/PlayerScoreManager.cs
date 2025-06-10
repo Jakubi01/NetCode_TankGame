@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class PlayerScoreManager : NetworkBehaviour
 {
-    public NetworkVariable<int> score = new();
-    
     public NetworkVariable<FixedString64Bytes> userId = new();
     
     public override void OnNetworkSpawn()

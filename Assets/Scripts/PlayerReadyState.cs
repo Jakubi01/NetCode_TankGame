@@ -4,7 +4,7 @@ using System.Linq;
 
 public class PlayerReadyState : NetworkBehaviour
 {
-    public static Dictionary<ulong, bool> ReadyStates = new();
+    private static Dictionary<ulong, bool> _readyStates = new();
 
     private void Awake()
     {
@@ -15,7 +15,7 @@ public class PlayerReadyState : NetworkBehaviour
     public void SubmitReadyServerRpc(ServerRpcParams rpcParams = default)
     {
         ulong clientId = rpcParams.Receive.SenderClientId;
-        ReadyStates[clientId] = true;
+        _readyStates[clientId] = true;
   
         if (AllPlayersReady())
         {
@@ -25,7 +25,7 @@ public class PlayerReadyState : NetworkBehaviour
     
     private bool AllPlayersReady()
     {
-        if (ReadyStates.Count < NetworkManager.Singleton.ConnectedClients.Count)
+        if (_readyStates.Count < NetworkManager.Singleton.ConnectedClients.Count)
         {
             return false;
         }
@@ -34,18 +34,17 @@ public class PlayerReadyState : NetworkBehaviour
         {
             return false;
         }
- 
-        // Lambda
-        return ReadyStates.Values.All(isReady => isReady);
+        
+        return _readyStates.Values.All(isReady => isReady);
     }
     
     public override void OnNetworkSpawn()
     {
-        ReadyStates[OwnerClientId] = true;
+        _readyStates[OwnerClientId] = true;
     }
 
     public override void OnNetworkDespawn()
     {
-        ReadyStates.Remove(OwnerClientId);
+        _readyStates.Remove(OwnerClientId);
     }
 }

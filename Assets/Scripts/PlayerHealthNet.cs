@@ -6,6 +6,9 @@ public class PlayerHealthNet : NetworkBehaviour
 {
     private const int MaxHealth = 100;
     private const int TakenDamage = 50;
+
+    private const int GUIWidth = 100;
+    private const int GUIHeight = 50;
     
     public NetworkVariable<int> health = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<FixedString64Bytes> userId = new(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
@@ -69,7 +72,7 @@ public class PlayerHealthNet : NetworkBehaviour
         
         Vector3 offset = new Vector3(0f, 2f, 0f);
         Vector3 pos = _mainCamera.WorldToScreenPoint(transform.position + offset);
-        Rect rect = new Rect(0, 0, 100, 50)
+        Rect rect = new Rect(0, 0, GUIWidth, GUIHeight)
         {
             x = pos.x,
             y = Screen.height - pos.y

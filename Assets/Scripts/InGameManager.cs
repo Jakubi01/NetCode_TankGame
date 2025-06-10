@@ -15,7 +15,7 @@ public class InGameManager : NetworkBehaviour
 
     public float PlayTime { get; private set; }
     
-    public bool CanMove { get; private set; }
+    public bool CanMove { get; set; }
     
     private Dictionary<ulong, (string userId, int Score)> _playerCache = new();
     

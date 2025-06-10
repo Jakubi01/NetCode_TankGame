@@ -19,7 +19,7 @@ public class PlayerController : NetworkBehaviour
     
     void Update()
     {
-        if (!gameObject || !BeginGameManager.Instance)
+        if (!gameObject || !BeginGameManager.Instance || !InGameManager.Instance.CanMove)
         {
             return;
         }
@@ -40,11 +40,6 @@ public class PlayerController : NetworkBehaviour
 
     private void Movement()
     {
-        if (!InGameManager.Instance.CanMove)
-        {
-            return;
-        }
-        
         float zOff = Input.GetAxis("Vertical") * BeginGameManager.Instance.SpeedTank * Time.deltaTime;
         transform.Translate(0.0f, 0.0f, zOff);
         

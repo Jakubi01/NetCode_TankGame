@@ -48,11 +48,13 @@ public class BeginGameManager : MonoBehaviour
         private set;
     }
 
+    private const int TargetFrameRate = 60;
+
     public static BeginGameManager Instance { get; private set; }
 
     private void Start()
     {
-        Application.targetFrameRate = 60;
+        Application.targetFrameRate = TargetFrameRate;
         InitParam();
     }
 

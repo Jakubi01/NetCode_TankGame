@@ -2,6 +2,18 @@ using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
+public struct SpawnInfo
+{
+    public Vector3 Position;
+    public Quaternion Rotation;
+
+    public SpawnInfo(Vector3 position, Quaternion rotation)
+    {
+        Position = position;
+        Rotation = rotation;
+    }
+}
+
 public class PlayerNetworkManager : NetworkBehaviour
 {
     public override void OnNetworkSpawn()
@@ -10,33 +22,26 @@ public class PlayerNetworkManager : NetworkBehaviour
         {
             var spawnPoints = InGameManager.Instance.spawnPoints;
 
-            if (spawnPoints != null && spawnPoints.Length > 0)
-            {
-                int randomIndex = Random.Range(0, spawnPoints.Length);
-                Transform spawnPoint = spawnPoints[randomIndex];
-                
-                transform.position = spawnPoint.position;
-                transform.rotation = spawnPoint.rotation;
+            var newPoint = GetRandomSpawnPoint(spawnPoints);
+            transform.position = newPoint.Position;
+            transform.rotation = newPoint.Rotation;
 
-                StartCoroutine(nameof(SubmitReadyServer));
-                InGameManager.Instance.ConnectedUserNum++;
-            }
+            StartCoroutine(nameof(SubmitReadyServer));
+            InGameManager.Instance.ConnectedUserNum++;
         }
         
         base.OnNetworkSpawn();
     }
 
-    public Vector3 GetRandomSpawnPoint()
+    private SpawnInfo GetRandomSpawnPoint(Transform[] spawnPoints)
     {
-        var spawnPoints = InGameManager.Instance.spawnPoints;
-
         if (spawnPoints == null || spawnPoints.Length == 0)
         {
-            return Vector3.zero;
+            return new SpawnInfo();
         }
 
         int index = Random.Range(0, spawnPoints.Length);
-        return spawnPoints[index].position;
+        return new SpawnInfo(spawnPoints[index].position, spawnPoints[index].rotation);
     }
     
     private IEnumerator SubmitReadyServer()

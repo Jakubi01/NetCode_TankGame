@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using TMPro;
 using Unity.Collections;
@@ -25,6 +26,8 @@ public class UiManagerTank : MonoBehaviour
     public TMP_Text textScoreboardTimer;
     public Slider sliderHealth;
     public GameObject rankingPanel;
+    public GameObject fadeInImage;
+    private Color _fadeInImageColor;
 
     public int health;
     public int maxHealth = 100;
@@ -33,7 +36,7 @@ public class UiManagerTank : MonoBehaviour
     
     private bool ShouldStartCountDown { get; set; }
     private bool ShouldStartScoreboardTimer { get; set; }
-
+    
     public static UiManagerTank Instance { get; private set; }
 
     private void Awake()
@@ -75,6 +78,8 @@ public class UiManagerTank : MonoBehaviour
         textScore.text = string.Empty;
         
         rankingPanel.SetActive(false);
+        fadeInImage.SetActive(false);
+        _fadeInImageColor = fadeInImage.GetComponent<Image>().color;
     }
 
     private void Update()
@@ -129,6 +134,7 @@ public class UiManagerTank : MonoBehaviour
             return;
         }
 
+        InGameManager.Instance.CanMove = false;
         _showScoreboardTime -= Time.deltaTime;
         textScoreboardTimer.text = _showScoreboardTime.ToString("F1");
 
@@ -174,13 +180,30 @@ public class UiManagerTank : MonoBehaviour
         UpdateTextUserInfo();
     }
 
+    private IEnumerator FadeIn()
+    {
+        float alphaValue = 0f;
+        fadeInImage.GetComponent<Image>().color = new Color(_fadeInImageColor.r, _fadeInImageColor.g, _fadeInImageColor.b ,alphaValue);
+        fadeInImage.SetActive(true);
+
+        while (true)
+        {
+            yield return new WaitForSeconds(0.1f);
+            alphaValue += 0.1f;
+            fadeInImage.GetComponent<Image>().color = new Color(_fadeInImageColor.r, _fadeInImageColor.g, _fadeInImageColor.b ,alphaValue);
+
+            if (alphaValue >= 1f)
+            {
+                break;
+            }
+        }
+        
+        LoadEndScene();
+    }
+
     private void StartFadeIn()
     {
-        // FadeIn Effect가 끝나면 호출
-        if (true)
-        {   
-            LoadEndScene();
-        }
+        StartCoroutine(nameof(FadeIn));
     }
 
     private void LoadEndScene()
