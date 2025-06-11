@@ -9,9 +9,13 @@ public class UiManagerBegin : MonoBehaviour
     public TMP_InputField inputPort;
     public TMP_InputField inputUserId;
 
-    public GameObject StartPanel;
-    public GameObject StartBtn;
-    public GameObject ExitBtn;
+    public GameObject startPanel;
+    public GameObject startBtn;
+    public GameObject exitBtn;
+    
+    private const string DefaultIpAddress = "127.0.0.1";
+    private const string DefaultUserName = "player";
+    private const string DefaultPort = "7777";
 
     public static UiManagerBegin Instance { get; private set; }
 
@@ -29,7 +33,7 @@ public class UiManagerBegin : MonoBehaviour
 
     private void Start()
     {
-        StartPanel.SetActive(false);
+        startPanel.SetActive(false);
     }
 
     public void StartHost()
@@ -55,36 +59,32 @@ public class UiManagerBegin : MonoBehaviour
 
     private void UpdateConnection()
     {
-        string ipAddress = inputIp.text;
-        
-        if (string.IsNullOrEmpty(ipAddress))
+        if (string.IsNullOrEmpty(inputIp.text))
         {
-            ipAddress = "127.0.0.1";
-            
-            string port = inputPort.text;
-            if (string.IsNullOrEmpty(port))
-            {
-                port = "7777";
-            }
-
-            string userId = inputUserId.text;
-            if (string.IsNullOrEmpty(userId))
-            {
-                userId = "player";
-            }
-
-            ushort portNum = ushort.Parse(port);
-            BeginGameManager.Instance.SetConnection(ipAddress, portNum);
-            BeginGameManager.Instance.UserId = userId;
+            inputIp.text = DefaultIpAddress;
         }
+        
+        if (string.IsNullOrEmpty(inputPort.text))
+        {
+            inputPort.text = DefaultPort;
+        }
+
+        if (string.IsNullOrEmpty(inputUserId.text))
+        {
+            inputUserId.text = DefaultUserName;
+        }
+
+        ushort portNum = ushort.Parse(inputPort.text);
+        BeginGameManager.Instance.SetConnection(inputIp.text, portNum);
+        BeginGameManager.Instance.UserId = inputUserId.text;
     }
 
     public void OnStartBtnClicked()
     {
-        StartPanel.SetActive(true);
+        startPanel.SetActive(true);
 
-        StartBtn.GetComponent<Button>().interactable = false;
-        ExitBtn.GetComponent<Button>().interactable = false;
+        startBtn.GetComponent<Button>().interactable = false;
+        exitBtn.GetComponent<Button>().interactable = false;
     }
 
     public void OnExitBtnClicked()
@@ -98,9 +98,9 @@ public class UiManagerBegin : MonoBehaviour
 
     public void OnHidePanelBtnClicked()
     {
-        StartPanel.SetActive(false);
+        startPanel.SetActive(false);
         
-        StartBtn.GetComponent<Button>().interactable = true;
-        ExitBtn.GetComponent<Button>().interactable = true;
+        startBtn.GetComponent<Button>().interactable = true;
+        exitBtn.GetComponent<Button>().interactable = true;
     }
 }

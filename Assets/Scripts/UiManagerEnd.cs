@@ -1,17 +1,23 @@
+using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class UiManagerEnd : MonoBehaviour
 {
-    private void Awake()
+    private IEnumerator ReturnToMainMenu()
     {
-        NetworkManager.Singleton.NetworkConfig.AutoSpawnPlayerPrefabClientSide = false;
+        NetworkManager.Singleton.Shutdown();
+        Destroy(NetworkManager.Singleton.gameObject);
+
+        yield return new WaitForSeconds(0.5f);
+        
+        SceneManager.LoadScene("BeginScene");
     }
     
     public void OnMainMenuBtnClicked()
     {
-        SceneManager.LoadScene("BeginScene");
+        StartCoroutine(nameof(ReturnToMainMenu));
     }
 
     public void OnExitBtnClicked()

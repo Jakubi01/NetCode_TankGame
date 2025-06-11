@@ -25,14 +25,16 @@ public class UiManagerTank : MonoBehaviour
     public TMP_Text textTimer;
     public TMP_Text textScoreboardTimer;
     public Slider sliderHealth;
+    public GameObject readyButton;
     public GameObject rankingPanel;
     public GameObject fadeInImage;
-    private Color _fadeInImageColor;
 
     public int health;
     public int maxHealth = 100;
+    
     private float _playTime;
     private float _showScoreboardTime;
+    private Color _fadeInImageColor;
     
     private bool ShouldStartCountDown { get; set; }
     private bool ShouldStartScoreboardTimer { get; set; }
@@ -70,11 +72,11 @@ public class UiManagerTank : MonoBehaviour
         ShouldStartCountDown = false;
         ShouldStartScoreboardTimer = false;
 
-        _playTime = 5f;// InGameManager.Instance.PlayTime;
-        _showScoreboardTime = 10;
+        _playTime = InGameManager.Instance.playTime;
+        _showScoreboardTime = 10f;
         
-        textTimer.text = InGameManager.Instance.PlayTime.ToString("F1");
-        textScoreboardTimer.text = InGameManager.Instance.PlayTime.ToString("F1");
+        textTimer.text = InGameManager.Instance.playTime.ToString("F1");
+        textScoreboardTimer.text = InGameManager.Instance.playTime.ToString("F1");
         textScore.text = string.Empty;
         
         rankingPanel.SetActive(false);
@@ -198,6 +200,7 @@ public class UiManagerTank : MonoBehaviour
             }
         }
         
+        InGameManager.Instance.RequestDestroyAllClients();
         LoadEndScene();
     }
 
@@ -206,8 +209,14 @@ public class UiManagerTank : MonoBehaviour
         StartCoroutine(nameof(FadeIn));
     }
 
-    private void LoadEndScene()
+    public void LoadEndScene()
     {
         NetworkManager.Singleton.SceneManager.LoadScene("EndScene", LoadSceneMode.Single);
+    }
+
+    public void OnReadyButtonClicked()
+    {
+        PlayerReadyState.Instance.SubmitReadyServerRpc();
+        readyButton.SetActive(false);
     }
 }

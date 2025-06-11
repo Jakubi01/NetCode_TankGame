@@ -3582,9 +3582,9 @@ MonoBehaviour:
   inputIp: {fileID: 1665969168}
   inputPort: {fileID: 1965225396}
   inputUserId: {fileID: 1894318127}
-  StartPanel: {fileID: 1704320524}
-  StartBtn: {fileID: 700573853}
-  ExitBtn: {fileID: 999409501}
+  startPanel: {fileID: 1704320524}
+  startBtn: {fileID: 700573853}
+  exitBtn: {fileID: 999409501}
 --- !u!1 &1603343603
 GameObject:
   m_ObjectHideFlags: 0

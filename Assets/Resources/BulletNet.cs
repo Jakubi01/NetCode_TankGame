@@ -4,7 +4,7 @@ using UnityEngine;
 public class BulletNet : NetworkBehaviour
 {
     private Rigidbody _rb;
-    private const int Score = 100;
+    private int _score;
 
     public ulong ClientId { get; set; }
     
@@ -21,6 +21,7 @@ public class BulletNet : NetworkBehaviour
         }
         
         _rb = GetComponent<Rigidbody>();
+        _score = InGameManager.Instance.BulletDamage;
         
         ShotBulletRpc();
         Invoke(nameof(KillBulletRpc), 3.0f);
@@ -69,7 +70,7 @@ public class BulletNet : NetworkBehaviour
         {
             other.gameObject.GetComponent<PlayerHealthNet>().DecHealthRpc();
             NetworkManager.Singleton.ConnectedClients[ClientId].PlayerObject.GetComponent<PlayerScoreManager>()
-                .AddScoreServerRpc(ClientId, Score);
+                .AddScoreServerRpc(ClientId, _score);
         }
 
         SpawnParticleRpc(transform.position, transform.rotation);

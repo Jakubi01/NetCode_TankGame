@@ -1,5 +1,4 @@
-﻿using System.Linq.Expressions;
-using UnityEngine;
+﻿using UnityEngine;
 using Unity.Netcode;
 
 public class RotMuzzle : NetworkBehaviour

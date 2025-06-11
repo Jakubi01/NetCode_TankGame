@@ -1,4 +1,3 @@
-using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -14,8 +13,10 @@ public struct SpawnInfo
     }
 }
 
-public class PlayerNetworkManager : NetworkBehaviour
+public class PlayerSpawnManager : NetworkBehaviour
 {
+    public float randomPosition = 10f;
+    
     public override void OnNetworkSpawn()
     {
         if (IsServer)
@@ -26,7 +27,6 @@ public class PlayerNetworkManager : NetworkBehaviour
             transform.position = newPoint.Position;
             transform.rotation = newPoint.Rotation;
 
-            StartCoroutine(nameof(SubmitReadyServer));
             InGameManager.Instance.ConnectedUserNum++;
         }
         
@@ -41,13 +41,11 @@ public class PlayerNetworkManager : NetworkBehaviour
         }
 
         int index = Random.Range(0, spawnPoints.Length);
-        return new SpawnInfo(spawnPoints[index].position, spawnPoints[index].rotation);
-    }
-    
-    private IEnumerator SubmitReadyServer()
-    {
-        // wait for PlayerReadyState init
-        yield return new WaitForSeconds(1f);
-        NetworkManager.Singleton.ConnectedClients[OwnerClientId].PlayerObject.GetComponent<PlayerReadyState>().SubmitReadyServerRpc();
+        Vector3 pos = spawnPoints[index].position;
+
+        pos += Vector3.up * 1.5f;
+        pos += new Vector3(Random.Range(-randomPosition, randomPosition), 0f, Random.Range(-randomPosition, randomPosition));
+        
+        return new SpawnInfo(pos, spawnPoints[index].rotation);
     }
 }

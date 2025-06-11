@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
+using Random = UnityEngine.Random;
 
 public class InGameManager : NetworkBehaviour 
 {
@@ -13,7 +14,9 @@ public class InGameManager : NetworkBehaviour
     
     public int ConnectedUserNum { get; set; }
 
-    public float PlayTime { get; private set; }
+    public int BulletDamage { get; private set; }
+    
+    public float playTime = 30;
     
     public bool CanMove { get; set; }
     
@@ -29,20 +32,44 @@ public class InGameManager : NetworkBehaviour
         {
             Destroy(gameObject);
         }
+    }
+    
+    public override void OnNetworkSpawn()
+    {
+        if (IsServer)
+        {
+            if (_playerCache.Count > 0)
+            {
+                _playerCache.Clear();
+            }
+        }
         
-        DontDestroyOnLoad(gameObject);
+        CanMove = false;
+        BulletDamage = 100;
+
+        NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
+        
+        base.OnNetworkSpawn();
     }
 
-    private void Start()
+    public override void OnNetworkDespawn()
     {
-        PlayTime = 30;
-        CanMove = false;
+        NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;
         
-        if (_playerCache.Count > 0)
+        base.OnNetworkDespawn();
+    }
+
+    private void OnClientDisconnected(ulong clientId)
+    {
+        ConnectedUserNum--;
+        
+        if (ConnectedUserNum <= 1)
         {
-            _playerCache.Clear();
+            NetworkManager.Singleton.Shutdown();
+            UiManagerTank.Instance.LoadEndScene();
         }
     }
+
 
     [ClientRpc]
     private void StartGameCountDownClientRpc()
@@ -120,5 +147,28 @@ public class InGameManager : NetworkBehaviour
         var player = Instantiate(playerPrefab, spawnPos, Quaternion.identity);
         
         player.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId, true);
+    }
+
+    public void RequestDestroyAllClients()
+    {
+        if (!IsServer)
+        {
+            return;
+        }
+        
+        RequestDestroyAllClientsServerRpc();
+    }
+    
+    [ServerRpc]
+    private void RequestDestroyAllClientsServerRpc()
+    {
+        var networkObjects = FindObjectsByType<NetworkObject>(FindObjectsSortMode.InstanceID);
+        foreach (var obj in networkObjects)
+        {
+            if (obj.IsSpawned)
+            {
+                obj.Despawn();
+            }
+        }
     }
 }

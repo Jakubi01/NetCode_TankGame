@@ -7,8 +7,8 @@ public class CameraManager : NetworkBehaviour
     private GameObject player;
     
     public float sensitivity = 5f;
-    private bool _bIsDragging = false;
-    private float _currentAngle = 0f;
+    private bool _bIsDragging;
+    private float _currentAngle;
     private const float Distance = 15f;
     private const float Height = 5f;
     private const float FixedXAngle = 20f;

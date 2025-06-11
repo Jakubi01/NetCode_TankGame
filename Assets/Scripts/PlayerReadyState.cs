@@ -1,14 +1,22 @@
 using Unity.Netcode;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 public class PlayerReadyState : NetworkBehaviour
 {
-    private static Dictionary<ulong, bool> _readyStates = new();
+    private Dictionary<ulong, bool> _readyStates = new();
 
+    public static PlayerReadyState Instance;
+    
     private void Awake()
     {
-        DontDestroyOnLoad(gameObject);
+        if (!Instance)
+        {
+            Instance = this;
+        }
+
+        _readyStates.Clear();
     }
     
     [ServerRpc(RequireOwnership = false)]
@@ -36,15 +44,5 @@ public class PlayerReadyState : NetworkBehaviour
         }
         
         return _readyStates.Values.All(isReady => isReady);
-    }
-    
-    public override void OnNetworkSpawn()
-    {
-        _readyStates[OwnerClientId] = true;
-    }
-
-    public override void OnNetworkDespawn()
-    {
-        _readyStates.Remove(OwnerClientId);
     }
 }
