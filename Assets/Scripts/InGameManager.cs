@@ -45,7 +45,7 @@ public class InGameManager : NetworkBehaviour
         }
         
         CanMove = false;
-        BulletDamage = 100;
+        BulletDamage = 50;
 
         NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
         
@@ -69,11 +69,11 @@ public class InGameManager : NetworkBehaviour
             UiManagerTank.Instance.LoadEndScene();
         }
     }
-
-
+    
     [ClientRpc]
     private void StartGameCountDownClientRpc()
     {
+        SoundManager.Instance.PlaySound(SoundType.ThemeTank, true);
         CanMove = true;
         UiManagerTank.Instance.StartTimer();
     }
@@ -159,13 +159,18 @@ public class InGameManager : NetworkBehaviour
         RequestDestroyAllClientsServerRpc();
     }
     
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     private void RequestDestroyAllClientsServerRpc()
     {
+        if (!IsServer)
+        {
+            return;
+        }
+        
         var networkObjects = FindObjectsByType<NetworkObject>(FindObjectsSortMode.InstanceID);
         foreach (var obj in networkObjects)
         {
-            if (obj.IsSpawned)
+            if (obj.CompareTag("Player") && obj.IsSpawned)
             {
                 obj.Despawn();
             }

@@ -29,7 +29,7 @@ public class PlayerSpawnManager : NetworkBehaviour
 
             InGameManager.Instance.ConnectedUserNum++;
         }
-        
+
         base.OnNetworkSpawn();
     }
 

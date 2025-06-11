@@ -34,26 +34,34 @@ public class UiManagerBegin : MonoBehaviour
     private void Start()
     {
         startPanel.SetActive(false);
+        SoundManager.Instance.PlaySound(SoundType.ThemeBegin, true);
     }
 
     public void StartHost()
     {
         BeginGameManager.Instance.UserNodeType = BeginGameManager.NodeType.Host;
         UpdateConnection();
-        SceneManager.LoadScene("TankScene");
+        LoadTankScene();
     }
 
     public void StartClient()
     {
         BeginGameManager.Instance.UserNodeType = BeginGameManager.NodeType.Client;
         UpdateConnection();
-        SceneManager.LoadScene("TankScene");
+        LoadTankScene();
     }
 
     public void StartServer()
     {
         BeginGameManager.Instance.UserNodeType = BeginGameManager.NodeType.Server;
         UpdateConnection();
+        LoadTankScene();
+    }
+
+    private void LoadTankScene()
+    {
+        SoundManager.Instance.StopPlaySound(SoundType.ThemeBegin);
+        
         SceneManager.LoadScene("TankScene");
     }
 
@@ -89,6 +97,8 @@ public class UiManagerBegin : MonoBehaviour
 
     public void OnExitBtnClicked()
     {
+        SoundManager.Instance.StopPlaySound(SoundType.ThemeBegin);
+        
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else 

@@ -1,4 +1,6 @@
+using System;
 using System.Collections;
+using System.Threading.Tasks;
 using UnityEngine;
 using TMPro;
 using Unity.Collections;
@@ -165,6 +167,13 @@ public class UiManagerTank : MonoBehaviour
     public void UpdateScoreUI(ScoreData[] scoreData)
     {
         textScore.text = "";
+
+        if (scoreData.Length == 0)
+        {
+            textScore.text = "Score not recorded";
+            return;
+        }
+        
         foreach (var data in scoreData)
         {
             textScore.text += $"{data.UserName} : {data.Score}\n";
@@ -199,9 +208,8 @@ public class UiManagerTank : MonoBehaviour
                 break;
             }
         }
-        
-        InGameManager.Instance.RequestDestroyAllClients();
-        LoadEndScene();
+
+        EndGameSequence();
     }
 
     private void StartFadeIn()
@@ -209,9 +217,30 @@ public class UiManagerTank : MonoBehaviour
         StartCoroutine(nameof(FadeIn));
     }
 
+    private async void EndGameSequence()
+    {
+        try
+        {
+            InGameManager.Instance.RequestDestroyAllClients();
+            await Task.Delay(100);
+            LoadEndScene();
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Error : {e.Message}");
+        }
+    }
+
     public void LoadEndScene()
     {
-        NetworkManager.Singleton.SceneManager.LoadScene("EndScene", LoadSceneMode.Single);
+        if (NetworkManager.Singleton.IsServer)
+        {
+            SoundManager.Instance.StopPlaySound(SoundType.ThemeTank);
+            NetworkManager.Singleton.SceneManager.LoadScene("EndScene", LoadSceneMode.Single);
+            return;
+        }
+
+        SceneManager.LoadScene("EndScene");
     }
 
     public void OnReadyButtonClicked()

@@ -19,12 +19,7 @@ public class PlayerController : NetworkBehaviour
     
     void Update()
     {
-        if (!gameObject || !BeginGameManager.Instance || !InGameManager.Instance.CanMove)
-        {
-            return;
-        }
-        
-        if (!IsOwner)
+        if (!gameObject || !BeginGameManager.Instance || !InGameManager.Instance.CanMove || !IsOwner)
         {
             return;
         }

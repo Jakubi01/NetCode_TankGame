@@ -1,17 +1,25 @@
+using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
 public class BulletNet : NetworkBehaviour
 {
-    private Rigidbody _rb;
-    private int _score;
-
     public ulong ClientId { get; set; }
+    
+    private Rigidbody _rb;
+    private const int Score = 100;
+    private int _bulletDamage;
+    private AudioSource _bulletHitSound;
     
     [HideInInspector]
     public GameObject launchPoint;
 
     public GameObject explosionParticle;
+
+    private void Awake()
+    {
+        _bulletHitSound = GetComponent<AudioSource>();
+    }
     
     private void Start()
     {
@@ -21,10 +29,29 @@ public class BulletNet : NetworkBehaviour
         }
         
         _rb = GetComponent<Rigidbody>();
-        _score = InGameManager.Instance.BulletDamage;
+        _bulletDamage = InGameManager.Instance.BulletDamage;
         
         ShotBulletRpc();
-        Invoke(nameof(KillBulletRpc), 3.0f);
+        Invoke(nameof(KillBulletServerRpc), 3.0f);
+    }
+
+    private IEnumerator WaitForBulletHitSoundEnd()
+    {
+        var component = GetComponent<Collider>();
+        if (component)
+        {
+            component.enabled = false;
+        }
+
+        if (_bulletHitSound)
+        {
+            _bulletHitSound.volume = SoundManager.Instance.soundVolume;
+            _bulletHitSound.Play();
+            yield return new WaitForSeconds(_bulletHitSound.clip.length);
+        }
+        
+        gameObject.SetActive(false);
+        KillBulletServerRpc();
     }
     
     [Rpc(SendTo.Everyone)]
@@ -38,8 +65,8 @@ public class BulletNet : NetworkBehaviour
         _rb.AddForce(launchPoint.transform.forward * BeginGameManager.Instance.BulletSpeed);
     }
 
-    [Rpc(SendTo.Server)]
-    private void KillBulletRpc()
+    [ServerRpc]
+    private void KillBulletServerRpc()
     {
         NetworkObject.Despawn();
     }
@@ -68,12 +95,15 @@ public class BulletNet : NetworkBehaviour
     {
         if (other.gameObject.CompareTag("Player"))
         {
-            other.gameObject.GetComponent<PlayerHealthNet>().DecHealthRpc();
-            NetworkManager.Singleton.ConnectedClients[ClientId].PlayerObject.GetComponent<PlayerScoreManager>()
-                .AddScoreServerRpc(ClientId, _score);
+            if (IsServer)
+            {
+                other.gameObject.GetComponent<PlayerHealthNet>().DecHealthRpc(_bulletDamage);
+                NetworkManager.Singleton.ConnectedClients[ClientId].PlayerObject.GetComponent<PlayerScoreManager>()
+                    .AddScoreServerRpc(ClientId, Score);
+            }
         }
 
         SpawnParticleRpc(transform.position, transform.rotation);
-        KillBulletRpc();
+        StartCoroutine(nameof(WaitForBulletHitSoundEnd));
     }
 }

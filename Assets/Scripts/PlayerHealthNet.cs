@@ -5,7 +5,6 @@ using UnityEngine;
 public class PlayerHealthNet : NetworkBehaviour
 {
     private const int MaxHealth = 100;
-    private const int TakenDamage = 50;
 
     private const int GUIWidth = 100;
     private const int GUIHeight = 50;
@@ -26,23 +25,24 @@ public class PlayerHealthNet : NetworkBehaviour
         {
             health.Value = MaxHealth;
             userId.Value = BeginGameManager.Instance.UserId;
+            UiManagerTank.Instance.UpdateUIInfo(health.Value);
         }
         
         base.OnNetworkSpawn();
     }
 
-    private void DecHealth()
+    private void DecHealth(int damage)
     {
-        int curValue = health.Value - TakenDamage;
+        int curValue = health.Value - damage;
+        
+        UiManagerTank.Instance.UpdateUIInfo(curValue);
+        health.Value = curValue;
+        
         if (curValue <= 0)
         {
             RequestRespawnServerRpc(OwnerClientId);
             DestroyEventRpc();
-            return;
         }
-        
-        UiManagerTank.Instance.UpdateUIInfo(curValue);
-        health.Value = curValue;
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -58,9 +58,9 @@ public class PlayerHealthNet : NetworkBehaviour
     }
 
     [Rpc(SendTo.Owner)]
-    public void DecHealthRpc()
+    public void DecHealthRpc(int damage)
     {
-        DecHealth();
+        DecHealth(damage);
     }
     
     private void OnGUI()
